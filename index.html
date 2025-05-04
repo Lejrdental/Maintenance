@@ -1,59 +1,345 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Site en construction</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coming Soon</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    /* Styles du fond et des canvas */
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #ece9e6, #ffffff);
-      color: #333;
+      margin: 0;
       height: 100vh;
+      background-color: #282343;
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
+      position: relative;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .light {
+      position: absolute;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .light-violet {
+      left: 0;
+      background: radial-gradient(ellipse at top left, rgba(114, 95, 177, 1) 0%, rgba(114, 95, 177, 0) 60%);
+      opacity: 0.8;
+    }
+
+    .light-orange {
+      right: 0;
+      background: radial-gradient(ellipse at top right, rgba(181, 113, 114, 1) 0%, rgba(181, 113, 114, 0) 60%);
+      opacity: 0.8;
+    }
+
+    canvas#staticNetwork {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      filter: blur(8px);
+    }
+
+    canvas#background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      padding: 20px;
+      z-index: 2;
+      color: white;
+    }
+
+    .title {
+      font-size: 5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
     .container {
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-      color: #f39c12;
+    .line {
+      font-size: 1.8rem;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      font-family: 'Playfair Display', serif;
     }
 
-    p {
-      font-size: 1.2em;
-      color: #555;
+    .char {
+      opacity: 0;
+      animation: showChar 0.05s forwards;
     }
 
-    .emoji {
-      font-size: 4em;
-      margin-bottom: 20px;
+    .line2 .char {
+      animation-delay: calc(var(--i) * 0.05s + 1.5s);
+    }
+
+    .line1 .char {
+      animation-delay: calc(var(--i) * 0.05s);
+    }
+
+    .cursor {
+      opacity: 0;
+      font-weight: bold;
+      margin-left: 5px;
+      animation: blink 0.8s step-end infinite;
+    }
+
+    @keyframes showChar {
+      to { opacity: 1; }
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 1;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="emoji">🚧</div>
-    <h1>Site en construction</h1>
-    <p>Ce site sera bientôt en ligne. Merci de votre patience !</p>
+  <div class="light light-violet"></div>
+  <div class="light light-orange"></div>
+  <canvas id="staticNetwork"></canvas>
+  <canvas id="background"></canvas>
+
+  <div class="overlay">
+    <h1 class="title">LeJrDental</h1>
+    <div class="container">
+      <div class="line line1"></div>
+      <div class="line line2"></div>
+    </div>
   </div>
+
+  <script>
+    const lines = [
+      "A bright idea,", 
+      "coming soon"
+    ];
+
+    lines.forEach((line, lineIndex) => {
+      const lineElement = document.querySelector(`.line${lineIndex + 1}`);
+      line.split('').forEach((char, index) => {
+        const span = document.createElement('span');
+        span.classList.add('char');
+        span.style.setProperty('--i', index);
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        lineElement.appendChild(span);
+      });
+    });
+
+    const line2 = document.querySelector('.line2');
+    const cursor = document.createElement('span');
+    cursor.classList.add('cursor');
+    cursor.textContent = '|';
+    line2.appendChild(cursor);
+
+    window.onload = () => {
+      // Lorsque la fenêtre est chargée, on démarre l'animation du texte
+      setTimeout(() => {
+        // Le curseur commence à clignoter uniquement après "coming soon"
+        cursor.style.opacity = 1;
+      }, 3000); // Ajuste ce délai pour qu'il corresponde à la fin de l'animation
+    };
+
+    /***************** Réseau Statique & Animations ******************/
+    function lightenColor(hex, factor) {
+      let c = hex.substring(1);
+      let num = parseInt(c, 16);
+      let r = (num >> 16) & 0xFF;
+      let g = (num >> 8) & 0xFF;
+      let b = num & 0xFF;
+      r = Math.min(255, Math.floor(r * factor));
+      g = Math.min(255, Math.floor(g * factor));
+      b = Math.min(255, Math.floor(b * factor));
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b)
+        .toString(16)
+        .slice(1);
+    }
+
+    function hexToRGBA(hex, alpha) {
+      let c = hex.substring(1);
+      let num = parseInt(c, 16);
+      let r = (num >> 16) & 0xFF;
+      let g = (num >> 8) & 0xFF;
+      let b = num & 0xFF;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    const colors = {
+      orange: '#b57172',
+      violet: '#725fb1',
+      orangeConnection: '#c97f73',
+      violetConnection: '#6453a0'
+    };
+
+    const staticCanvas = document.getElementById("staticNetwork");
+    const staticCtx = staticCanvas.getContext("2d");
+    staticCanvas.width = window.innerWidth;
+    staticCanvas.height = window.innerHeight;
+
+    let fixedParticles = [];
+    const numFixedParticles = 50;
+    const maxDistance = 150;
+
+    for (let i = 0; i < numFixedParticles; i++) {
+      let x = Math.random() * staticCanvas.width;
+      let y = Math.random() * staticCanvas.height;
+      let size = (Math.random() * 2 + 1) * 1.2;
+      let baseColor = (x < staticCanvas.width / 2) ? colors.violet : colors.orange;
+      let color = lightenColor(baseColor, 1.65);
+      fixedParticles.push({ x, y, size, color });
+    }
+
+    function drawStaticNetwork() {
+      staticCtx.clearRect(0, 0, staticCanvas.width, staticCanvas.height);
+      fixedParticles.forEach(p => {
+        staticCtx.shadowColor = p.color;
+        staticCtx.shadowBlur = 10;
+        staticCtx.fillStyle = p.color;
+        staticCtx.beginPath();
+        staticCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        staticCtx.fill();
+        staticCtx.shadowBlur = 0;
+      });
+      for (let a = 0; a < fixedParticles.length; a++) {
+        for (let b = a + 1; b < fixedParticles.length; b++) {
+          let dx = fixedParticles[a].x - fixedParticles[b].x;
+          let dy = fixedParticles[a].y - fixedParticles[b].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < maxDistance) {
+            let alpha = 1 - distance / maxDistance;
+            let connectionBase = (fixedParticles[a].x < staticCanvas.width / 2 || fixedParticles[b].x < staticCanvas.width / 2)
+                                  ? colors.violetConnection
+                                  : colors.orangeConnection;
+            const connectionColor = hexToRGBA(connectionBase, alpha);
+            staticCtx.strokeStyle = connectionColor;
+            staticCtx.lineWidth = 1;
+            staticCtx.beginPath();
+            staticCtx.moveTo(fixedParticles[a].x, fixedParticles[a].y);
+            staticCtx.lineTo(fixedParticles[b].x, fixedParticles[b].y);
+            staticCtx.stroke();
+          }
+        }
+      }
+    }
+
+    drawStaticNetwork();
+
+    const canvas = document.getElementById("background");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particlesArray = [];
+    const upperThreshold = canvas.height * 0.33;
+
+    class Particle {
+      constructor() {
+        if (Math.random() < 0.9) {
+          this.y = Math.random() * upperThreshold;
+        } else {
+          this.y = upperThreshold + Math.random() * (canvas.height - upperThreshold);
+        }
+        this.x = Math.random() * canvas.width;
+        this.size = (Math.random() * 2 + 1) * 1.2;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.baseColor = (this.x < canvas.width / 2) ? colors.violet : colors.orange;
+        this.color = lightenColor(this.baseColor, 1.65);
+      }
+
+      draw() {
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.baseColor = (this.x < canvas.width / 2) ? colors.violet : colors.orange;
+        this.color = lightenColor(this.baseColor, 1.65);
+        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+      }
+    }
+
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < 100; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+
+    function connectParticles() {
+      for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a + 1; b < particlesArray.length; b++) {
+          const dx = particlesArray[a].x - particlesArray[b].x;
+          const dy = particlesArray[a].y - particlesArray[b].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < maxDistance) {
+            let alpha = 1 - distance / maxDistance;
+            let connectionBase = (particlesArray[a].x < canvas.width / 2 || particlesArray[b].x < canvas.width / 2)
+                                 ? colors.violetConnection
+                                 : colors.orangeConnection;
+            const connectionColor = hexToRGBA(connectionBase, alpha);
+            ctx.strokeStyle = connectionColor;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      connectParticles();
+      requestAnimationFrame(animate);
+    }
+
+    initParticles();
+    animate();
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      staticCanvas.width = window.innerWidth;
+      staticCanvas.height = window.innerHeight;
+      initParticles();
+      drawStaticNetwork();
+    });
+  </script>
 </body>
 </html>
