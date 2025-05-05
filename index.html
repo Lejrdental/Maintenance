@@ -290,11 +290,12 @@
     }
 
     function initParticles() {
-      particlesArray = [];
-      for (let i = 0; i < 100; i++) {
-        particlesArray.push(new Particle());
-      }
-    }
+  particlesArray = [];
+  const particleCount = window.innerWidth < 768 ? 40 : 100; // Moins de particules sur mobile
+  for (let i = 0; i < particleCount; i++) {
+    particlesArray.push(new Particle());
+  }
+}
 
     function connectParticles() {
       for (let a = 0; a < particlesArray.length; a++) {
